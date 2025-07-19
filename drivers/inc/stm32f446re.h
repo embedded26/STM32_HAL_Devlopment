@@ -5,6 +5,8 @@
  *      Author: DELL
  */
 
+// Date 24-06-2025
+
 #ifndef INC_STM32F446RE_H_
 #define INC_STM32F446RE_H_
 
@@ -173,38 +175,42 @@ typedef struct
 // CLEAR PERIPHERALS
 
 
-#define GPIOA_PCLK_DI()  (RCC->AHB1ENR &= (1 << 0) )
-#define GPIOB_PCLK_DI()  (RCC->AHB1ENR &= (1 << 1) )
-#define GPIOC_PCLK_DI()  (RCC->AHB1ENR &= (1 << 2) )
-#define GPIOD_PCLK_DI()  (RCC->AHB1ENR &= (1 << 3) )
-#define GPIOE_PCLK_DI()  (RCC->AHB1ENR &= (1 << 4) )
-#define GPIOF_PCLK_DI()  (RCC->AHB1ENR &= (1 << 5) )
-#define GPIOG_PCLK_DI()  (RCC->AHB1ENR &= (1 << 6) )
-#define GPIOH_PCLK_DI()  (RCC->AHB1ENR &= (1 << 7) )
-#define GPIOI_PCLK_DI()  (RCC->AHB1ENR &= (1 << 8) )
+//#define GPIOA_PCLK_DI()  (RCC->AHB1ENR &= (1 << 0) )
+//#define GPIOB_PCLK_DI()  (RCC->AHB1ENR &= (1 << 1) )
+//#define GPIOC_PCLK_DI()  (RCC->AHB1ENR &= (1 << 2) )
+//#define GPIOD_PCLK_DI()  (RCC->AHB1ENR &= (1 << 3) )
+//#define GPIOE_PCLK_DI()  (RCC->AHB1ENR &= (1 << 4) )
+//#define GPIOF_PCLK_DI()  (RCC->AHB1ENR &= (1 << 5) )
+//#define GPIOG_PCLK_DI()  (RCC->AHB1ENR &= (1 << 6) )
+//#define GPIOH_PCLK_DI()  (RCC->AHB1ENR &= (1 << 7) )
+//#define GPIOI_PCLK_DI()  (RCC->AHB1ENR &= (1 << 8) )
 
 
 
 
-
-#define I2C1_PCLK_DE ()  (RCC->AHB1ENR &= (1 << 21) )
-#define I2C2_PCLK_DE ()  (RCC->AHB1ENR &= (1 << 22) )
-#define I2C3_PCLK_DE ()  (RCC->AHB1ENR &= (1 << 23) )
-
-
-#define SPI1_PCLK_DE ()  (RCC->AHB2ENR   &= (1 << 12) )
-#define SPI2_PCLK_DE ()  (RCC->APB1LPENR &= (1 << 14) )
-#define SPI3_PCLK_DE ()  (RCC->APB1LPENR &= (1 << 15) )
-
-#define USART1_PCLK_DE() (RCC->APB2LPENR &= (1 << 4 ) )
-#define USART2_PCLK_DE() (RCC->APB1LPENR &= (1 << 17) )
-#define USART3_PCLK_DE() (RCC->APB1LPENR &= (1 << 18) )
-#define UART4_PCLK_DE () (RCC->APB1LPENR &= (1 << 19) )
-#define UART5_PCLK_DE () (RCC->APB1LPENR &= (1 << 20) )
-#define USART6_PCLK_DE() (RCC->APB2LPENR &= (1 << 5 ) )
+#define I2C1_PCLK_DE ()  	(RCC->AHB1ENR &= (1 << 21) )
+#define I2C2_PCLK_DE ()  	(RCC->AHB1ENR &= (1 << 22) )
+#define I2C3_PCLK_DE ()  	(RCC->AHB1ENR &= (1 << 23) )
 
 
-#define SYSCFG_PCLK_DE() (RCC->APB2LPENR &= (1 << 14) )
+#define SPI1_PCLK_DE ()  	(RCC->AHB2ENR   &= (1 << 12) )
+#define SPI2_PCLK_DE ()  	(RCC->APB1LPENR &= (1 << 14) )
+#define SPI3_PCLK_DE ()  	(RCC->APB1LPENR &= (1 << 15) )
+
+#define USART1_PCLK_DE() 	(RCC->APB2LPENR &= (1 << 4 ) )
+#define USART2_PCLK_DE() 	(RCC->APB1LPENR &= (1 << 17) )
+#define USART3_PCLK_DE() 	(RCC->APB1LPENR &= (1 << 18) )
+#define UART4_PCLK_DE () 	(RCC->APB1LPENR &= (1 << 19) )
+#define UART5_PCLK_DE () 	(RCC->APB1LPENR &= (1 << 20) )
+#define USART6_PCLK_DE() 	(RCC->APB2LPENR &= (1 << 5 ) )
+
+
+#define SYSCFG_PCLK_DE() 	(RCC->APB2LPENR &= (1 << 14) )
+
+#define GPIOI_PCLK_DI()
+#define GPIOA_REG_RESET()	do { (RCC->AHB1RSTR   |= (1 << 0) );(RCC->AHB1RSTR   &= ~(1 << 0) );}while(0)
+#define GPIOB_REG_RESET()	do { (RCC->AHB1RSTR   |= (1 << 1) );(RCC->AHB1RSTR   &= ~(1 << 1) );}while(0)
+#define GPIOC_REG_RESET()	do { (RCC->AHB1RSTR   |= (1 << 2) );(RCC->AHB1RSTR   &= ~(1 << 2) );}while(0)
 
 
 #define ENABLE 			1
@@ -213,8 +219,6 @@ typedef struct
 #define RESET 			DISABLE
 #define GPIO_PIN_SET 	SET
 #define GPIO_PIN_
-
-
 
 
 
