@@ -74,11 +74,35 @@ GPIO_pinconfig_t GPIO_PINConfig;
 
 // Peripheral Clock Set-up
 
-void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t EnorDi);
+void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t EnorDi)
+{
+
+    if (EnorDi == ENABLE)
+    {
+        if (pGPIOx == GPIOA) RCC->AHB1ENR |= (1 << 0);
+        else if (pGPIOx == GPIOB) RCC->AHB1ENR |= (1 << 1);
+        else if (pGPIOx == GPIOC) RCC->AHB1ENR |= (1 << 2);
+        // ... add others
+    }
+    else
+    {
+        // Disable Clock (optional)
+    }
+
+
+
+}
 
 //Init and De-int
 
-void GPIO_Init(GPIO_Handle_t *pGPIOHandle);
+void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
+{
+
+
+
+
+
+}
 void GPIO_DeInit(GPIO_RegDef_t *pGPIOx);
 // Data read ad write
 
@@ -86,9 +110,11 @@ uint8_t  GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx , uint8_t PinNumber);
 uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx);
 void GPIO_WriteToOutputPin(GPIO_RegDef_t *pGPIOx , uint8_t PinNumber ,uint8_t Value);
 void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx ,uint16_t Value);
-void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx ,uint8_t Value);
-
-
+//void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber);
+void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
+{
+    pGPIOx->ODR ^= (1 << PinNumber);  //  Now PinNumber is declared
+}
 
 void GPIO_IRQConfig(uint8_t IRQNumber ,uint8_t IRQPriority ,uint8_t EnorDi );
 void GPIO_IRQHandling(uint8_t PinNumber);
