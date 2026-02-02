@@ -255,9 +255,10 @@ VirtualNVIC_ProcessAllPending();
 
 #### HAL-Compatible GPIO
 
+Compilation: `gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c`
+
 ```c
 // Forward declarations (or use header files in production)
-// When linking: gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c
 extern HAL_StatusTypeDef HAL_Init(void);
 extern HAL_StatusTypeDef HAL_GPIO_Init(uint8_t port, GPIO_InitTypeDef *GPIO_Init);
 extern void HAL_GPIO_WritePin(uint8_t port, uint16_t pin, GPIO_PinState state);
