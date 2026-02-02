@@ -620,10 +620,15 @@ make test-hal      # Test HAL wrapper
 **Example Usage:**
 
 ```c
-// For demonstration in standalone tests, we include the implementation
-// In production, you would compile separately and link, or use header files
-// This is for the virtual simulation environment only
-#include "sim_hal_wrapper.c"
+// Forward declarations (in production, use header files)
+extern HAL_StatusTypeDef HAL_Init(void);
+extern HAL_StatusTypeDef HAL_GPIO_Init(uint8_t port, GPIO_InitTypeDef *GPIO_Init);
+extern void HAL_GPIO_WritePin(uint8_t port, uint16_t pin, GPIO_PinState state);
+extern void HAL_GPIO_TogglePin(uint8_t port, uint16_t pin);
+extern void HAL_Delay(uint32_t ms);
+
+// Note: For standalone tests, link with:
+// gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c
 
 int main(void) {
     // Initialize HAL

@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define MAX_IRQ_LINES 240  // Typical STM32 has up to 82-90 external interrupts
+#define MAX_IRQ_LINES 240  // Support all STM32 variants (typical range: 82-90 for common STM32F4, up to 240 for larger devices)
 #define MAX_PRIORITY 15    // 4-bit priority (0-15, 0 is highest)
 
 // IRQ States

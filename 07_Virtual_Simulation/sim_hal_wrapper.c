@@ -182,7 +182,10 @@ void HAL_NVIC_DisableIRQ(uint8_t irq_num) {
 
 // HAL NVIC Set Priority
 void HAL_NVIC_SetPriority(uint8_t irq_num, uint32_t preempt_priority, uint32_t sub_priority) {
-    // Combine priorities (simple 4-bit scheme)
+    // Combine priorities using 4-bit scheme:
+    // Bits [3:2] = preemption priority (0-3)
+    // Bits [1:0] = sub priority (0-3)
+    // This simulates the typical STM32 priority grouping
     uint8_t priority = (preempt_priority << 2) | (sub_priority & 0x3);
     if (priority > 15) priority = 15;
     
