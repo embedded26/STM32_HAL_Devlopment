@@ -1,0 +1,44 @@
+# Pre-commit hooks for STM32 HAL Development
+# Install: pip install pre-commit
+# Setup: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        
+      - id: end-of-file-fixer
+        name: Fix end of files
+        
+      - id: check-yaml
+        name: Check YAML syntax
+        
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=500']
+        
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        
+      - id: mixed-line-ending
+        name: Check line endings
+        args: ['--fix=lf']
+
+  - repo: local
+    hooks:
+      - id: build-virtual-sim
+        name: Build Virtual Simulation
+        entry: bash -c 'cd 07_Virtual_Simulation && make clean && make'
+        language: system
+        pass_filenames: false
+        always_run: true
+        
+      - id: run-tests
+        name: Run Virtual Simulation Tests
+        entry: bash -c 'cd 07_Virtual_Simulation && ./build/test_gpio && ./build/test_nvic && ./build/test_adc'
+        language: system
+        pass_filenames: false
+        always_run: true
