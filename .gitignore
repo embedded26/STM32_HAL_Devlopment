@@ -1,0 +1,20 @@
+# C/Embedded build artifacts
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+*.d
+*.map
+
+# IDE files to exclude
+*.vscode/
+*.idea/
+*.project
+*.cproject
+*.settings/
+*.sublime-project
+*.sublime-workspace
+# Others
+.DS_Store
+Thumbs.db
