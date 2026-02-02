@@ -131,7 +131,15 @@ make clean
 #### Basic GPIO Configuration
 
 ```c
-#include "sim_gpio.c"  // Or link against compiled object
+// Forward declarations (or use header files in production)
+extern void VirtualGPIO_Init(void);
+extern uint8_t VirtualGPIO_EnableClock(uint8_t port);
+extern uint8_t VirtualGPIO_ConfigurePin(uint8_t port, uint8_t pin, uint8_t mode, 
+                                        uint8_t output_type, uint8_t speed, uint8_t pupd);
+extern uint8_t VirtualGPIO_WritePin(uint8_t port, uint8_t pin, uint8_t value);
+extern uint8_t VirtualGPIO_TogglePin(uint8_t port, uint8_t pin);
+extern uint8_t VirtualGPIO_ReadPin(uint8_t port, uint8_t pin, uint8_t *value);
+extern uint8_t VirtualGPIO_SetAltFunction(uint8_t port, uint8_t pin, uint8_t alt_func);
 
 // Initialize the virtual GPIO system
 VirtualGPIO_Init();
@@ -193,7 +201,13 @@ VirtualGPIO_SimulateInterrupt(2, 13, 1);  // Rising edge
 #### Basic Interrupt Configuration
 
 ```c
-#include "sim_nvic.c"
+// Forward declarations (or use header files in production)
+extern void VirtualNVIC_Init(void);
+extern uint8_t VirtualNVIC_EnableIRQ(uint8_t irq_num);
+extern uint8_t VirtualNVIC_SetPriority(uint8_t irq_num, uint8_t priority);
+extern uint8_t VirtualNVIC_SetHandler(uint8_t irq_num, void (*handler)(void), const char *name);
+extern uint8_t VirtualNVIC_SetPending(uint8_t irq_num);
+extern void VirtualNVIC_ProcessInterrupts(void);
 
 // Initialize NVIC
 VirtualNVIC_Init();
@@ -242,7 +256,13 @@ VirtualNVIC_ProcessAllPending();
 #### HAL-Compatible GPIO
 
 ```c
-#include "sim_hal_wrapper.c"
+// Forward declarations (or use header files in production)
+// When linking: gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c
+extern HAL_StatusTypeDef HAL_Init(void);
+extern HAL_StatusTypeDef HAL_GPIO_Init(uint8_t port, GPIO_InitTypeDef *GPIO_Init);
+extern void HAL_GPIO_WritePin(uint8_t port, uint16_t pin, GPIO_PinState state);
+extern void HAL_GPIO_TogglePin(uint8_t port, uint16_t pin);
+extern void HAL_Delay(uint32_t ms);
 
 // Initialize HAL
 HAL_Init();

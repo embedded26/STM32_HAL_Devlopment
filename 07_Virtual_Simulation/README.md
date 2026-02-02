@@ -105,7 +105,13 @@ make test-adc     # ADC tests
 ### GPIO Basic Example
 
 ```c
-#include "sim_gpio.c"
+// Forward declarations (or use header files in production)
+extern void VirtualGPIO_Init(void);
+extern uint8_t VirtualGPIO_EnableClock(uint8_t port);
+extern uint8_t VirtualGPIO_ConfigurePin(uint8_t port, uint8_t pin, uint8_t mode,
+                                        uint8_t output_type, uint8_t speed, uint8_t pupd);
+extern uint8_t VirtualGPIO_WritePin(uint8_t port, uint8_t pin, uint8_t value);
+extern uint8_t VirtualGPIO_TogglePin(uint8_t port, uint8_t pin);
 
 int main(void) {
     // Initialize
@@ -128,6 +134,13 @@ int main(void) {
 ### Interrupt Example
 
 ```c
+// Forward declarations
+extern void VirtualGPIO_Init(void);
+extern uint8_t VirtualGPIO_EnableClock(uint8_t port);
+extern uint8_t VirtualGPIO_ConfigureInterrupt(uint8_t port, uint8_t pin, uint8_t mode,
+                                               void (*handler)(uint8_t, uint8_t));
+extern void VirtualGPIO_SimulateInterrupt(uint8_t port, uint8_t pin, uint8_t edge);
+
 void button_handler(uint8_t port, uint8_t pin) {
     printf("Button pressed!\n");
 }
@@ -149,7 +162,12 @@ int main(void) {
 ### HAL Example
 
 ```c
-#include "sim_hal_wrapper.c"
+// Forward declarations (or use header files in production)
+// When linking: gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c
+extern HAL_StatusTypeDef HAL_Init(void);
+extern HAL_StatusTypeDef HAL_GPIO_Init(uint8_t port, GPIO_InitTypeDef *GPIO_Init);
+extern void HAL_GPIO_TogglePin(uint8_t port, uint16_t pin);
+extern void HAL_Delay(uint32_t ms);
 
 int main(void) {
     HAL_Init();
@@ -201,15 +219,19 @@ gcc -o my_test my_test.c sim_gpio.c sim_nvic.c -Wall -std=c99
 ### Include in Your Code
 
 ```c
-// Forward declare functions you need
+// Option 1: Forward declare functions you need
 extern void VirtualGPIO_Init(void);
 extern uint8_t VirtualGPIO_EnableClock(uint8_t port);
 // ... etc
 
-// Or conditionally compile
+// Option 2: Link at compile time
+// gcc -o my_test my_test.c sim_gpio.c sim_nvic.c -Wall -std=c99
+
+// Option 3: Use conditional compilation with proper linking
 #ifdef USE_VIRTUAL_DRIVERS
-  #include "sim_gpio.c"
-  #include "sim_nvic.c"
+  // Forward declarations or header includes here
+  extern void VirtualGPIO_Init(void);
+  // ...
 #endif
 ```
 
