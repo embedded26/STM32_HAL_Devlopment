@@ -2,7 +2,7 @@ name: STM32 HAL CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, copilot/** ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
 
