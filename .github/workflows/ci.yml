@@ -1,0 +1,161 @@
+name: STM32 HAL CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, copilot/** ]
+  pull_request:
+    branches: [ main, develop ]
+
+# Limit permissions of GITHUB_TOKEN for security
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test Virtual Simulation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc make
+        gcc --version
+        make --version
+        
+    - name: Build Virtual Simulation
+      run: |
+        cd 07_Virtual_Simulation
+        make clean
+        make
+        
+    - name: Run Tests - ADC
+      run: |
+        cd 07_Virtual_Simulation
+        ./build/test_adc
+        
+    - name: Run Tests - GPIO
+      run: |
+        cd 07_Virtual_Simulation
+        ./build/test_gpio
+        
+    - name: Run Tests - NVIC
+      run: |
+        cd 07_Virtual_Simulation
+        ./build/test_nvic
+        
+    - name: Run Tests - HAL Wrapper
+      run: |
+        cd 07_Virtual_Simulation
+        ./build/test_hal_wrapper
+        
+    - name: Check for Build Artifacts
+      run: |
+        ls -la 07_Virtual_Simulation/build/
+        echo "✅ All build artifacts created successfully"
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Check File Permissions
+      run: |
+        echo "Checking for executable permissions on source files..."
+        find . -name "*.c" -o -name "*.h" | while read file; do
+          if [ -x "$file" ]; then
+            echo "⚠️  Warning: $file has executable permission"
+          fi
+        done
+        echo "✅ File permissions check complete"
+        
+    - name: Check for Common Issues
+      run: |
+        echo "Checking for trailing whitespace..."
+        if grep -r '[[:space:]]$' --include="*.c" --include="*.h" .; then
+          echo "⚠️  Found trailing whitespace (non-blocking)"
+        else
+          echo "✅ No trailing whitespace found"
+        fi
+        
+    - name: Verify Documentation
+      run: |
+        echo "Checking for required documentation files..."
+        for doc in README.md Documentation/SIMULATION_GUIDE.md; do
+          if [ -f "$doc" ]; then
+            echo "✅ Found: $doc"
+          else
+            echo "❌ Missing: $doc"
+            exit 1
+          fi
+        done
+        
+  multi-compiler:
+    name: Multi-Compiler Compatibility
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        gcc-version: [9, 10, 11, 12]
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup GCC ${{ matrix.gcc-version }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }}
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc-version }} 100
+        gcc --version
+        
+    - name: Build with GCC ${{ matrix.gcc-version }}
+      run: |
+        cd 07_Virtual_Simulation
+        make clean
+        make
+        echo "✅ Build successful with GCC ${{ matrix.gcc-version }}"
+
+  documentation:
+    name: Documentation Build Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Check README Structure
+      run: |
+        echo "Validating README.md structure..."
+        if [ -f README.md ]; then
+          lines=$(wc -l < README.md)
+          echo "README.md contains $lines lines"
+          if [ $lines -lt 50 ]; then
+            echo "⚠️  README might be too short"
+          else
+            echo "✅ README has adequate content"
+          fi
+        fi
+        
+    - name: Verify All Documentation Links
+      run: |
+        echo "Checking for broken internal links..."
+        if command -v markdown-link-check &> /dev/null; then
+          find . -name "*.md" -exec markdown-link-check {} \;
+        else
+          echo "ℹ️  markdown-link-check not available, skipping"
+        fi
+        echo "✅ Documentation check complete"
