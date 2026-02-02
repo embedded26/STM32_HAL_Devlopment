@@ -15,6 +15,7 @@
 ## 📋 Table of Contents
 
 - [🎯 Project Overview](#project-overview)
+- [🎯 Board Selection Guide](#board-selection-guide)
 - [🏗️ Repository Structure](#repository-structure)
 - [⚙️ Core Concepts](#core-concepts)
 - [🔧 Getting Started](#getting-started)
@@ -24,6 +25,13 @@
 - [⚡ Performance Tips](#performance-tips)
 - [🤝 Contributing](#contributing)
 - [📖 Resources](#resources)
+
+### 📚 Quick Documentation Links
+
+- 🚀 **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
+- 📖 **[MODULE_GUIDE.md](MODULE_GUIDE.md)** - Detailed API and module documentation
+- 🔧 **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- 🧪 **[SIMULATION_GUIDE.md](Documentation/SIMULATION_GUIDE.md)** - Virtual testing guide
 
 ---
 
@@ -70,7 +78,91 @@ This repository provides a **comprehensive educational framework** for mastering
 ✅ **Bare-Metal Drivers** - Design efficient drivers from scratch  
 ✅ **Advanced Debugging** - Use debugging tools effectively  
 ✅ **Virtual Simulation** - Test without hardware using software simulation  
+✅ **Multi-Board Support** - F0, F1, F4 series with automatic peripheral mapping  
+✅ **CI/CD Pipeline** - Automated testing and validation  
 ✅ **Real-World Examples** - Practical implementations you can learn from  
+
+### 🎯 Ultra-Novelty Features
+
+This repository includes **industry-first features** not found in standard STM32 tutorials:
+
+1. **🎮 Virtual Board Simulator** - Complete software simulation layer
+   - Test GPIO, NVIC, ADC without hardware
+   - Interrupt simulation framework
+   - Error injection for robust testing
+
+2. **🔄 Multi-Board Selector Pattern** - Seamless board switching
+   - Support for F0/F1/F4 variants
+   - Automatic clock configuration
+   - Peripheral availability detection
+
+3. **🛠️ Advanced Driver Abstraction** - Production-ready patterns
+   - Universal GPIO driver interface
+   - Complete error handling framework
+   - Interrupt priority management
+
+4. **🐛 Development Tools Suite** - Professional debugging
+   - Advanced macro logging system
+   - Memory inspection utilities
+   - Performance profiling helpers
+   - Register dump utilities
+
+---
+
+## 🎯 Board Selection Guide
+
+### Supported Boards
+
+| Series | Example Board | Clock | GPIO Ports | Key Features |
+|--------|---------------|-------|------------|--------------|
+| **STM32F0** | Nucleo-F030R8 | 48 MHz | A-F (6) | Entry-level, USB support |
+| **STM32F1** | Nucleo-F103RB | 72 MHz | A-G (7) | Classic ARM MCU |
+| **STM32F4** | Nucleo-F446RE | 180 MHz | A-I (9) | High performance, FPU |
+
+### Quick Board Selection
+
+**Method 1: Compile-time definition**
+```c
+#define STM32F4XX  // or STM32F1XX or STM32F0XX
+#include "board_support/board_config.h"
+```
+
+**Method 2: Compiler flag**
+```bash
+arm-none-eabi-gcc -DSTM32F1XX -o output.elf source.c
+```
+
+**Method 3: Makefile**
+```makefile
+# Select board
+BOARD_SERIES = STM32F4XX
+CFLAGS += -D$(BOARD_SERIES)
+```
+
+### Automatic Features
+
+When you select a board, the system automatically provides:
+- ✅ Correct peripheral base addresses
+- ✅ Clock tree configuration
+- ✅ GPIO port availability
+- ✅ Peripheral detection (UART, SPI, I2C, ADC)
+- ✅ Memory map alignment
+
+**Example:**
+```c
+#define STM32F1XX
+#include "board_support/board_config.h"
+
+// Get board information
+const char* series = Board_GetSeriesName();    // "STM32F1"
+uint32_t clock = Board_GetSystemClock();       // 72000000
+
+// Check peripherals
+BoardPeripherals_t p = Board_GetPeripherals();
+if (p.has_usart3) {
+    // USART3 is available on this board
+}
+```  
 
 ---
 
