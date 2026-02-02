@@ -1,9 +1,84 @@
-# Simulation Guide
+# STM32 Virtual Simulation Guide
 
 ## Table of Contents
-1. [QEMU Setup](#qemu-setup)
-2. [Testing on Virtual Board](#testing-on-virtual-board)
-3. [Simulation Workflows](#simulation-workflows)
+1. [Overview](#overview)
+2. [Virtual Driver Framework](#virtual-driver-framework)
+3. [QEMU Setup](#qemu-setup)
+4. [Testing on Virtual Board](#testing-on-virtual-board)
+5. [Virtual Drivers Usage](#virtual-drivers-usage)
+6. [Simulation Workflows](#simulation-workflows)
+7. [Error Injection and Testing](#error-injection-and-testing)
+
+---
+
+## Overview
+
+This guide covers two approaches to STM32 simulation testing:
+
+1. **Virtual Driver Framework**: Software-based simulation of STM32 peripherals (GPIO, NVIC, HAL) that runs on any system without requiring QEMU or hardware. Perfect for unit testing and development.
+
+2. **QEMU Emulation**: Full system emulation using QEMU for testing compiled firmware binaries.
+
+The Virtual Driver Framework provides:
+- ✅ GPIO simulation with pin multiplexing
+- ✅ NVIC interrupt controller simulation
+- ✅ HAL abstraction layer compatibility
+- ✅ Error injection for robustness testing
+- ✅ No hardware or QEMU required
+- ✅ Fast iteration and testing
+
+---
+
+## Virtual Driver Framework
+
+### Architecture
+
+The virtual driver framework consists of three main components:
+
+```
+┌─────────────────────────────────────────────────┐
+│         Application/Test Code                   │
+├─────────────────────────────────────────────────┤
+│         HAL Wrapper (sim_hal_wrapper.c)         │
+│         - HAL-compatible API                    │
+├─────────────────────────────────────────────────┤
+│  Virtual GPIO        │  Virtual NVIC            │
+│  (sim_gpio.c)        │  (sim_nvic.c)            │
+│  - Pin configuration │  - Interrupt priority    │
+│  - Read/Write        │  - Pending/Active states │
+│  - Interrupts        │  - Handler execution     │
+│  - Pin Multiplexing  │  - Global IRQ control    │
+└─────────────────────────────────────────────────┘
+```
+
+### Building the Virtual Drivers
+
+Navigate to the `07_Virtual_Simulation` directory and use make:
+
+```bash
+cd 07_Virtual_Simulation
+
+# Build all test executables
+make all
+
+# Run all tests
+make test
+
+# Run individual tests
+make test-gpio
+make test-nvic
+make test-hal
+
+# Clean build artifacts
+make clean
+```
+
+### Available Simulations
+
+1. **sim_adc.c**: Virtual ADC with 16 channels, 10-bit resolution
+2. **sim_gpio.c**: Virtual GPIO with full pin configuration, interrupts, and pin multiplexing
+3. **sim_nvic.c**: Virtual NVIC with 240 IRQ lines, priority handling
+4. **sim_hal_wrapper.c**: HAL-compatible wrapper for virtual drivers
 
 ---
 
@@ -32,6 +107,8 @@
 ### Configuration
 - Set up QEMU by creating a configuration file or defining options in command line to emulate the specific STM32 device you are working with.
 
+---
+
 ## Testing on Virtual Board
 
 ### Setting Up the Virtual Board
@@ -45,24 +122,305 @@
    arm-none-eabi-gdb path/to/your/firmware.elf
    ```
 
-### Running Tests
-- Describe how to execute test cases or simulations within the virtual board environment, including necessary commands or steps.[Include your test runner commands, framework etc.]
+---
+
+## Virtual Drivers Usage
+
+### GPIO Virtual Driver
+
+#### Basic GPIO Configuration
+
+```c
+// Forward declarations (or use header files in production)
+extern void VirtualGPIO_Init(void);
+extern uint8_t VirtualGPIO_EnableClock(uint8_t port);
+extern uint8_t VirtualGPIO_ConfigurePin(uint8_t port, uint8_t pin, uint8_t mode, 
+                                        uint8_t output_type, uint8_t speed, uint8_t pupd);
+extern uint8_t VirtualGPIO_WritePin(uint8_t port, uint8_t pin, uint8_t value);
+extern uint8_t VirtualGPIO_TogglePin(uint8_t port, uint8_t pin);
+extern uint8_t VirtualGPIO_ReadPin(uint8_t port, uint8_t pin, uint8_t *value);
+extern uint8_t VirtualGPIO_SetAltFunction(uint8_t port, uint8_t pin, uint8_t alt_func);
+
+// Initialize the virtual GPIO system
+VirtualGPIO_Init();
+
+// Enable clock for GPIOA
+VirtualGPIO_EnableClock(0);  // 0 = GPIOA
+
+// Configure pin as output
+VirtualGPIO_ConfigurePin(
+    0,              // Port (GPIOA)
+    5,              // Pin number
+    1,              // Mode: OUTPUT
+    0,              // Output type: Push-Pull
+    3,              // Speed: HIGH
+    0               // Pull-up/down: NONE
+);
+
+// Write to pin
+VirtualGPIO_WritePin(0, 5, 1);  // Set pin high
+
+// Toggle pin
+VirtualGPIO_TogglePin(0, 5);
+
+// Read from pin
+uint8_t value;
+VirtualGPIO_ReadPin(0, 5, &value);
+```
+
+#### Pin Multiplexing (Alternate Functions)
+
+```c
+// Configure PA9 as USART1_TX (AF7)
+VirtualGPIO_ConfigurePin(0, 9, 2, 0, 3, 0);  // Mode: ALTERNATE
+VirtualGPIO_SetAltFunction(0, 9, 7);         // AF7 for USART1
+```
+
+#### GPIO Interrupts
+
+```c
+// Define interrupt handler
+void my_gpio_irq(uint8_t port, uint8_t pin) {
+    printf("Interrupt on GPIO%c.%d\n", 'A' + port, pin);
+}
+
+// Configure pin for rising edge interrupt
+VirtualGPIO_ConfigureInterrupt(
+    2,              // Port (GPIOC)
+    13,             // Pin
+    4,              // Mode: RISING edge
+    my_gpio_irq     // Handler function
+);
+
+// Simulate interrupt trigger (for testing)
+VirtualGPIO_SimulateInterrupt(2, 13, 1);  // Rising edge
+```
+
+### NVIC Virtual Controller
+
+#### Basic Interrupt Configuration
+
+```c
+// Forward declarations (or use header files in production)
+extern void VirtualNVIC_Init(void);
+extern uint8_t VirtualNVIC_EnableIRQ(uint8_t irq_num);
+extern uint8_t VirtualNVIC_SetPriority(uint8_t irq_num, uint8_t priority);
+extern uint8_t VirtualNVIC_SetHandler(uint8_t irq_num, void (*handler)(void), const char *name);
+extern uint8_t VirtualNVIC_SetPending(uint8_t irq_num);
+extern void VirtualNVIC_ProcessInterrupts(void);
+
+// Initialize NVIC
+VirtualNVIC_Init();
+
+// Define interrupt handler
+void timer_handler(void) {
+    printf("Timer interrupt!\n");
+}
+
+// Enable IRQ line
+VirtualNVIC_EnableIRQ(6);  // TIM1 Update IRQ
+
+// Set priority (0 = highest, 15 = lowest)
+VirtualNVIC_SetPriority(6, 2);
+
+// Register handler
+VirtualNVIC_SetHandler(6, timer_handler, "TIM1_Update");
+
+// Trigger interrupt
+VirtualNVIC_SetPending(6);
+
+// Process pending interrupts
+VirtualNVIC_ProcessInterrupts();
+```
+
+#### Priority-Based Interrupt Handling
+
+```c
+// Configure multiple interrupts with different priorities
+VirtualNVIC_EnableIRQ(23);
+VirtualNVIC_SetPriority(23, 1);  // High priority
+
+VirtualNVIC_EnableIRQ(37);
+VirtualNVIC_SetPriority(37, 3);  // Lower priority
+
+// Set both pending
+VirtualNVIC_SetPending(23);
+VirtualNVIC_SetPending(37);
+
+// Process all - higher priority (23) executes first
+VirtualNVIC_ProcessAllPending();
+```
+
+### HAL Wrapper Usage
+
+#### HAL-Compatible GPIO
+
+Compilation: `gcc -o test test.c sim_hal_wrapper.c sim_gpio.c sim_nvic.c`
+
+```c
+// Forward declarations (or use header files in production)
+extern HAL_StatusTypeDef HAL_Init(void);
+extern HAL_StatusTypeDef HAL_GPIO_Init(uint8_t port, GPIO_InitTypeDef *GPIO_Init);
+extern void HAL_GPIO_WritePin(uint8_t port, uint16_t pin, GPIO_PinState state);
+extern void HAL_GPIO_TogglePin(uint8_t port, uint16_t pin);
+extern void HAL_Delay(uint32_t ms);
+
+// Initialize HAL
+HAL_Init();
+
+// Configure GPIO using HAL API
+GPIO_InitTypeDef gpio_config;
+gpio_config.Pin = 5;
+gpio_config.Mode = GPIO_MODE_OUTPUT_PP;
+gpio_config.Pull = GPIO_NOPULL;
+gpio_config.Speed = GPIO_SPEED_FREQ_HIGH;
+gpio_config.Alternate = 0;
+
+HAL_GPIO_Init(GPIOA_PORT, &gpio_config);
+
+// Use HAL functions
+HAL_GPIO_WritePin(GPIOA_PORT, 5, GPIO_PIN_SET);
+HAL_Delay(100);
+HAL_GPIO_TogglePin(GPIOA_PORT, 5);
+
+// Read pin state
+GPIO_PinState state = HAL_GPIO_ReadPin(GPIOA_PORT, 5);
+```
+
+---
 
 ## Simulation Workflows
 
 ### Common Workflows
+
+1. **Unit Testing**:
+   ```bash
+   # Test individual drivers
+   make test-gpio
+   make test-nvic
+   ```
+
+2. **Integration Testing**:
+   ```bash
+   # Test HAL wrapper with multiple drivers
+   make test-hal
+   ```
+
+3. **Development Iteration**:
+   - Write code using HAL API
+   - Test with virtual drivers
+   - Deploy to hardware or QEMU
+
+4. **Automated Testing**:
+   - Integrate `make test` into CI/CD pipeline
+   - No special hardware or QEMU setup required
+
+### QEMU Integration Workflow
+
 1. **Basic Validation**:
    - Start QEMU with the specified configuration to confirm that your firmware runs without immediate errors.
+
 2. **Integration Testing**:
    - Combine multiple modules into a single test case and validate integrated behavior on the virtual board.
+
 3. **Automated Testing**:
    - Leverage CI/CD tools to automatically run your QEMU simulations on push events and pull requests to ensure quality control.
+
+---
+
+## Error Injection and Testing
+
+The virtual drivers support error injection for robustness testing:
+
+### Enable Error Injection
+
+```c
+// Enable error injection (10% failure rate)
+VirtualGPIO_SetErrorInjection(1);
+
+// Now operations may randomly fail
+if (!VirtualGPIO_WritePin(0, 5, 1)) {
+    uint8_t error = VirtualGPIO_GetLastError();
+    printf("Operation failed: %d\n", error);
+    // Handle error gracefully
+}
+
+// Disable error injection
+VirtualGPIO_SetErrorInjection(0);
+```
+
+### Error Codes
+
+**GPIO Errors:**
+- `GPIO_ERROR_NONE` (0): No error
+- `GPIO_ERROR_INVALID_PORT` (1): Invalid port number
+- `GPIO_ERROR_INVALID_PIN` (2): Invalid pin number
+- `GPIO_ERROR_CONFIG` (3): Configuration error
+- `GPIO_ERROR_INTERRUPT` (4): Interrupt error
+- `GPIO_ERROR_PINMUX` (5): Pin multiplexing error
+
+**NVIC Errors:**
+- `NVIC_ERROR_NONE` (0): No error
+- `NVIC_ERROR_INVALID_IRQ` (1): Invalid IRQ number
+- `NVIC_ERROR_PRIORITY` (2): Priority configuration error
+
+### Testing Strategies
+
+1. **Normal Operation Testing**: Verify correct behavior under ideal conditions
+2. **Error Handling Testing**: Enable error injection and verify graceful degradation
+3. **Interrupt Priority Testing**: Test interrupt nesting and priority handling
+4. **Pin Multiplexing Testing**: Verify correct alternate function configuration
+5. **State Verification**: Use print functions to verify internal state
+
+---
+
+## Advanced Features
+
+### Display Port/Controller State
+
+```c
+// Display all GPIO port information
+VirtualGPIO_PrintPortState(0);  // GPIOA
+
+// Display NVIC state
+VirtualNVIC_PrintState();
+```
+
+### Global Interrupt Control
+
+```c
+// Disable all interrupts
+VirtualNVIC_DisableGlobalIRQ();
+
+// Critical section
+// ...
+
+// Re-enable interrupts
+VirtualNVIC_EnableGlobalIRQ();
+```
 
 ### Additional Tips
 - Refer to the QEMU documentation for advanced options and configurations.
 - For performance testing, consider using additional tools like Valgrind alongside QEMU.
+- Use virtual drivers for rapid prototyping before hardware testing.
+- Combine virtual and QEMU testing for comprehensive validation.
+
+---
+
+## Examples
+
+See the test files in `07_Virtual_Simulation/` for complete examples:
+- `sim_gpio.c`: GPIO configuration, interrupts, pin mux
+- `sim_nvic.c`: Interrupt priority and handling
+- `sim_hal_wrapper.c`: HAL-compatible API usage
+
+Build and run examples:
+```bash
+cd 07_Virtual_Simulation
+make test
+```
 
 ---
 
 ## Conclusion
-This guide provides foundational understanding and steps for setting up QEMU, testing your firmware on a virtual board, and understanding simulation workflows. Adjust steps according to specific project needs and configurations.
+This guide provides comprehensive coverage of both virtual driver simulation and QEMU-based testing. The virtual driver framework enables rapid development and testing without hardware, while QEMU provides full system emulation for final validation. Adjust approaches according to specific project needs and configurations.
