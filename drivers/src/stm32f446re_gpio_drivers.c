@@ -132,17 +132,17 @@ void GPIO_DeInit(GPIO_RegDef_t *pGPIOx)
     else if (pGPIOx == GPIOC)
         GPIOC_REG_RESET();
     else if (pGPIOx == GPIOD)
-        RCC->AHB1RSTR |= (1 << 3);
+        GPIOD_REG_RESET();
     else if (pGPIOx == GPIOE)
-        RCC->AHB1RSTR |= (1 << 4);
+        GPIOE_REG_RESET();
     else if (pGPIOx == GPIOF)
-        RCC->AHB1RSTR |= (1 << 5);
+        GPIOF_REG_RESET();
     else if (pGPIOx == GPIOG)
-        RCC->AHB1RSTR |= (1 << 6);
+        GPIOG_REG_RESET();
     else if (pGPIOx == GPIOH)
-        RCC->AHB1RSTR |= (1 << 7);
+        GPIOH_REG_RESET();
     else if (pGPIOx == GPIOI)
-        RCC->AHB1RSTR |= (1 << 8);
+        GPIOI_REG_RESET();
 }
 
 /*********************************************************************

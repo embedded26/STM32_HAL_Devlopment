@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# Limit permissions of GITHUB_TOKEN for security
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build & Test Virtual Simulation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout Repository
@@ -56,6 +62,8 @@ jobs:
   code-quality:
     name: Code Quality Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout Repository
@@ -95,6 +103,8 @@ jobs:
   multi-compiler:
     name: Multi-Compiler Compatibility
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         gcc-version: [9, 10, 11, 12]
@@ -120,6 +130,8 @@ jobs:
   documentation:
     name: Documentation Build Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout Repository
