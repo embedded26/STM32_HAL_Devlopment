@@ -69,6 +69,7 @@ This repository provides a **comprehensive educational framework** for mastering
 ✅ **Interrupt Handling** - Master interrupt controllers and handlers  
 ✅ **Bare-Metal Drivers** - Design efficient drivers from scratch  
 ✅ **Advanced Debugging** - Use debugging tools effectively  
+✅ **Virtual Simulation** - Test without hardware using software simulation  
 ✅ **Real-World Examples** - Practical implementations you can learn from  
 
 ---
@@ -149,6 +150,14 @@ STM32_HAL_Development/
 │       ├── interrupt_handler.c
 │       └── README.md
 │
+├── 📁 07_Virtual_Simulation/           ← 🆕 Virtual driver testing framework
+│   ├── sim_gpio.c                     ← Virtual GPIO driver with pin-mux
+│   ├── sim_nvic.c                     ← Virtual NVIC interrupt controller
+│   ├── sim_hal_wrapper.c              ← HAL-compatible API wrapper
+│   ├── sim_adc.c                      ← Virtual ADC simulation
+│   ├── Makefile                       ← Build system for tests
+│   └── README.md                      ← Virtual simulation guide
+│
 ├── 📁 Tools_Config/
 │   ├── STM32_Datasheet_Reference.md ← Pin configurations
 │   ├── Memory_Map_Guide.md          ← Memory layout reference
@@ -161,6 +170,7 @@ STM32_HAL_Development/
 │   ├── HAL_BEST_PRACTICES.md        ← Best practices
 │   ├── DEBUGGING_GUIDE.md           ← Advanced debugging
 │   ├── PERFORMANCE_OPTIMIZATION.md  ← Optimization tips
+│   ├── SIMULATION_GUIDE.md          ← 🆕 Virtual & QEMU simulation guide
 │   └── TROUBLESHOOTING.md           ← Common issues & fixes
 │
 ├── Makefile                          ← Build configuration
@@ -546,6 +556,101 @@ make monitor
 │  Bug Found!     │
 └─────────────────┘
 ```
+
+---
+
+### 🧪 Module 7: Virtual Simulation Framework
+
+**Virtual Driver Testing Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│           Virtual Simulation Framework                   │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌────────────────────────────────────┐                │
+│  │  Application/Test Code             │                │
+│  └───────────────┬────────────────────┘                │
+│                  │                                      │
+│  ┌───────────────▼────────────────────┐                │
+│  │  HAL Abstraction Layer             │                │
+│  │  • HAL_GPIO_Init()                 │                │
+│  │  • HAL_GPIO_WritePin()             │                │
+│  │  • HAL_NVIC_EnableIRQ()            │                │
+│  └───────────────┬────────────────────┘                │
+│                  │                                      │
+│  ┌───────────────▼────────────────────┐                │
+│  │  Virtual Drivers                   │                │
+│  │  • GPIO: Pin config, read/write    │                │
+│  │  • NVIC: Interrupt priority        │                │
+│  │  • ADC: Channel simulation         │                │
+│  └───────────────┬────────────────────┘                │
+│                  │                                      │
+│  ┌───────────────▼────────────────────┐                │
+│  │  Software Simulation               │                │
+│  │  • No hardware required            │                │
+│  │  • Fast iteration cycles           │                │
+│  │  • Error injection testing         │                │
+│  └────────────────────────────────────┘                │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **GPIO Simulation** | Full pin configuration, interrupts, pin multiplexing (AF0-AF15) |
+| **NVIC Simulation** | 240 IRQ lines, priority handling, interrupt processing |
+| **HAL Compatible** | Drop-in replacement for STM32 HAL functions |
+| **Error Injection** | Configurable fault injection for robustness testing |
+| **Cross-Platform** | Runs on Linux, macOS, Windows without hardware |
+| **CI/CD Ready** | Easy integration into automated testing pipelines |
+
+**Quick Start:**
+
+```bash
+cd 07_Virtual_Simulation
+make test          # Build and run all tests
+make test-gpio     # Test GPIO driver
+make test-nvic     # Test interrupt controller
+make test-hal      # Test HAL wrapper
+```
+
+**Example Usage:**
+
+```c
+#include "sim_hal_wrapper.c"
+
+int main(void) {
+    // Initialize HAL
+    HAL_Init();
+    
+    // Configure GPIO pin
+    GPIO_InitTypeDef gpio;
+    gpio.Pin = 5;
+    gpio.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio.Pull = GPIO_NOPULL;
+    gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+    
+    HAL_GPIO_Init(GPIOA_PORT, &gpio);
+    
+    // Use standard HAL functions
+    HAL_GPIO_WritePin(GPIOA_PORT, 5, GPIO_PIN_SET);
+    HAL_GPIO_TogglePin(GPIOA_PORT, 5);
+    
+    return 0;
+}
+```
+
+**Benefits:**
+- ✅ Test without hardware
+- ✅ Fast compile-test cycles
+- ✅ Error injection capabilities
+- ✅ Learn STM32 concepts risk-free
+- ✅ Debug with standard tools (gdb, valgrind)
+
+See `07_Virtual_Simulation/README.md` and `Documentation/SIMULATION_GUIDE.md` for complete documentation.
 
 ---
 
